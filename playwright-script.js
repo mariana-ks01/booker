@@ -20,9 +20,9 @@ const courtIds = [
 ]
 
 const weekdayPreferences = [
-    1080,
-    1020,
-    1140
+    1080, // 1080 / 60 = 18
+    // 1020, // 17
+    1140  // 19
 ];
 
 const weekendPreferences = [
@@ -89,7 +89,8 @@ const preferences = weekendDays.includes(date.getDay()) ? weekendPreferences : w
 })()
 
 const login = async page => {
-    await page.goto('https://clubspark.lta.org.uk/FinsburyPark/Account/SignIn?returnUrl=%2FFinsburyPark%2FBooking%2FBookByDate')
+    await page.goto('https://clubspark.lta.org.uk/PoplarRecGround/Account/SignIn?returnUrl=%2FPoplarRecGround%2FBooking%2FBookByDate')
+    // await page.goto('https://clubspark.lta.org.uk/FinsburyPark/Account/SignIn?returnUrl=%2FFinsburykPark%2FBooking%2FBookByDate')
     const ltaLoginSelector = 'button.lta'
     await page.locator(ltaLoginSelector).click()
 
@@ -107,7 +108,8 @@ const login = async page => {
 }
 
 const getSessions = async (page) =>  {
-    const url = `https://clubspark.lta.org.uk/FinsburyPark/Booking/BookByDate#?date=${dateString}`;
+    // const url = `https://clubspark.lta.org.uk/FinsburyPark/Booking/BookByDate#?date=${dateString}`;
+    const url = `https://clubspark.lta.org.uk/PoplarRecGround/Booking/BookByDate#?date=${dateString}`;
     console.log(url)
     await page.goto(url);
 
@@ -152,7 +154,8 @@ const book = async (page, url) => {
 }
 
 const bookingPageUrl = (courtId, date, sessionId, startTime, endTime) => {
-    return `https://clubspark.lta.org.uk/FinsburyPark/Booking/Book?` + 
+    // return `https://clubspark.lta.org.uk/FinsburyPark/Booking/Book?` + 
+    return `https://clubspark.lta.org.uk/PoplarRecGround/Booking/Book?` + 
     `Contacts%5B0%5D.IsPrimary=true&` + 
     `ResourceID=${courtId}&` +
     `Date=${date}&` +
