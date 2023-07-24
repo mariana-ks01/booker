@@ -3,7 +3,7 @@ name: booker
 on:
   push:
   schedule:
-    - cron: '0 0 * * 5'
+    - cron: '0 23 * * 4'  # Thursday 23:00 UTC == Friday 00:00 GMT
   workflow_dispatch:
 
 jobs:
