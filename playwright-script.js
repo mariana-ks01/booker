@@ -9,14 +9,8 @@ const dateString = date.toLocaleDateString("sv", {timeZone: "Europe/London"})
 console.log(dateString)
 
 const courtIds = [
-   'f51042cf-95c8-4aca-acdf-0206636b5db0',
-   'd5c0b45a-45ab-47d6-acf7-3aec131f07a0',
-   '69957309-b814-4c24-9bda-a06a79a7e144',
-   '6d4b1751-6a4f-4263-b46e-600fd3e95f01',
-   '246e82df-4e7c-4c03-9377-06051aeaa766',
-   '94c48894-e669-4cd8-80cc-d092f468dd08',
-   '5e9109b2-4e1e-40d1-9aac-bdb00dbf2c60',
-   '8d26144f-7486-4046-a006-8b8c4f7900ac'
+   'bd151ffa-52e1-4322-914e-be82eb341fea',
+   '001037ab-d8d2-42d4-a1d1-01def3336cbd',
 ]
 
 const weekdayPreferences = [
@@ -26,12 +20,12 @@ const weekdayPreferences = [
 ];
 
 const weekendPreferences = [
-    600,
-    540,
-    660
+    // 600,
+    // 540,
+    // 660
 ];
 
-const weekendDays = [6, 0];
+const weekendDays = [6, 0];  // Saturday and Sunday
 const preferences = weekendDays.includes(date.getDay()) ? weekendPreferences : weekdayPreferences;
 
 (async () => {
@@ -50,15 +44,15 @@ const preferences = weekendDays.includes(date.getDay()) ? weekendPreferences : w
 
     for (preference of preferences) {
         firstHourCourtIds = courtIds.filter(courtId => sessions.some(session => session.courtId === courtId && session.startTime === preference.toString(10)))
-        secondHourCourtIds = courtIds.filter(courtId => sessions.some(session => session.courtId === courtId && session.startTime === (preference + 60).toString(10)))
-        bothHourCourtIds = firstHourCourtIds.filter(firstHourCourtId => secondHourCourtIds.includes(firstHourCourtId))
+        // secondHourCourtIds = courtIds.filter(courtId => sessions.some(session => session.courtId === courtId && session.startTime === (preference + 60).toString(10)))
+        // bothHourCourtIds = firstHourCourtIds.filter(firstHourCourtId => secondHourCourtIds.includes(firstHourCourtId))
 
         console.log(preference)
         console.log(firstHourCourtIds)
-        console.log(secondHourCourtIds)
-        console.log(bothHourCourtIds)
+        // console.log(secondHourCourtIds)
+        // console.log(bothHourCourtIds)
 
-        if (!bothHourCourtIds.length && (!firstHourCourtIds.length || !secondHourCourtIds.length)) {
+        if (!firstHourCourtIds.length) {
             console.log(`Insufficient sessions found for ${preference}`)
             continue
         }
@@ -66,24 +60,29 @@ const preferences = weekendDays.includes(date.getDay()) ? weekendPreferences : w
         break
     }
 
-    if (!firstHourCourtIds.length || !secondHourCourtIds.length) {
+    if (!firstHourCourtIds.length) {
         console.log("Insufficent sessions found");
         browser.close()
     }
 
-    if (bothHourCourtIds.length) {
-        console.log('we have a double')
-        const session = sessions.find(session => session.startTime === preference.toString() && session.courtId === bothHourCourtIds[0])
-        await book(page, bookingPageUrl(bothHourCourtIds[0], dateString, session.sessionId, preference, preference + 120))
-        console.log("Double booked")
-    } else if (firstHourCourtIds.length && secondHourCourtIds.length) {
-        console.log('going for two singles')
+    if (firstHourCourtIds.length) {
+        console.log('Ready to book a single court')
         const firstSession = sessions.find(session => session.startTime === preference.toString() && session.courtId === firstHourCourtIds[0])
-        const secondSession = sessions.find(session => session.startTime === (preference + 60).toString() && session.courtId === secondHourCourtIds[0])
         await book(page, bookingPageUrl(firstHourCourtIds[0], dateString, firstSession.sessionId, preference, preference + 60))
-        await book(page, bookingPageUrl(secondHourCourtIds[0], dateString, secondSession.sessionId, preference + 60, preference + 120))
-        console.log("Two singles booked")
     }
+        // console.log('we have a double')
+        // const session = sessions.find(session => session.startTime === preference.toString() && session.courtId === bothHourCourtIds[0])
+        // await book(page, bookingPageUrl(bothHourCourtIds[0], dateString, session.sessionId, preference, preference + 120))
+        // console.log("Double booked")
+    // } 
+    // else if (firstHourCourtIds.length && secondHourCourtIds.length) {
+    //     console.log('going for two singles')
+    //     const firstSession = sessions.find(session => session.startTime === preference.toString() && session.courtId === firstHourCourtIds[0])
+    //     const secondSession = sessions.find(session => session.startTime === (preference + 60).toString() && session.courtId === secondHourCourtIds[0])
+    //     await book(page, bookingPageUrl(firstHourCourtIds[0], dateString, firstSession.sessionId, preference, preference + 60))
+    //     await book(page, bookingPageUrl(secondHourCourtIds[0], dateString, secondSession.sessionId, preference + 60, preference + 120))
+    //     console.log("Two singles booked")
+    // }
 
     browser.close()
 })()
