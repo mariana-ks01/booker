@@ -3,33 +3,38 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+const executablePath = 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
+
 const date = new Date()
-date.setDate(date.getDate() + 7)
+date.setDate(date.getDate() + 14)
 const dateString = date.toLocaleDateString("sv", {timeZone: "Europe/London"})
 console.log(dateString)
 
 const courtIds = [
-   'bd151ffa-52e1-4322-914e-be82eb341fea',
-   '001037ab-d8d2-42d4-a1d1-01def3336cbd',
+   'e93a1aa3-a7a8-41c1-81d6-b0f1e73d6ecd', //court 4
+   '23e0b037-e9a6-491b-9598-f6d2743a71d8', //court 6
+   //'253d6b6290c2-e609-482e-9934-e97f212e351f', //ct3
+   //'33b36759-cfd9-4d29-9135-65107f91a524' // ct5
 ]
 
 const weekdayPreferences = [
-    1080, // 1080 / 60 = 18
-    // 1020, // 17
-    1140  // 19
+     1080, // 1080 / 60 = 18
+     1020, // 17
+     1140  // 19
 ];
 
 const weekendPreferences = [
-    // 600,
-    // 540,
-    // 660
+    
+    720,
+    780,
+    840
 ];
 
 const weekendDays = [6, 0];  // Saturday and Sunday
 const preferences = weekendDays.includes(date.getDay()) ? weekendPreferences : weekdayPreferences;
 
 (async () => {
-    const browser = await chromium.launch()
+    const browser = await chromium.launch({executablePath, headless: false})
     const context = await browser.newContext();
     const page = await context.newPage()
 
@@ -84,14 +89,15 @@ const preferences = weekendDays.includes(date.getDay()) ? weekendPreferences : w
     //     console.log("Two singles booked")
     // }
 
-    browser.close()
-})()
+     browser.close()
+})
 
 const login = async page => {
-    await page.goto('https://clubspark.lta.org.uk/PoplarRecGround/Account/SignIn?returnUrl=%2FPoplarRecGround%2FBooking%2FBookByDate')
+    console.log('logging in')
+    await page.goto('https://auth.clubspark.uk/account/signin?ReturnUrl=%2fissue%2fwsfed%3fwa%3dwsignin1.0%26wtrealm%3dhttps%253a%252f%252fstratford.newhamparkstennis.org.uk%26wctx%3drm%253d0%2526id%253d0%2526ru%253dhttps%25253a%25252f%25252fstratford.newhamparkstennis.org.uk%25252fBooking%25252fBookings%26wct%3d2023-09-20T20%253a12%253a59Z%26prealm%3dhttps%253a%252f%252fclubspark.lta.org.uk%252f%26proot%3dhttps%253a%252f%252fstratford.newhamparkstennis.org.uk%26paroot%3dhttps%253a%252f%252fstratford.newhamparkstennis.org.uk%26source%3dstratford_newhamparkstennis_org_uk%26name%3dStratford%2bPark%26nologo%3d0%26error%3dFalse%26message%3d&wa=wsignin1.0&wtrealm=https%3a%2f%2fstratford.newhamparkstennis.org.uk&wctx=rm%3d0%26id%3d0%26ru%3dhttps%253a%252f%252fstratford.newhamparkstennis.org.uk%252fBooking%252fBookings&wct=2023-09-20T20%3a12%3a59Z&prealm=https%3a%2f%2fclubspark.lta.org.uk%2f&proot=https%3a%2f%2fstratford.newhamparkstennis.org.uk&paroot=https%3a%2f%2fstratford.newhamparkstennis.org.uk&source=stratford_newhamparkstennis_org_uk&name=Stratford+Park&nologo=0&error=False&message=')
     // await page.goto('https://clubspark.lta.org.uk/FinsburyPark/Account/SignIn?returnUrl=%2FFinsburykPark%2FBooking%2FBookByDate')
-    const ltaLoginSelector = 'button.lta'
-    await page.locator(ltaLoginSelector).click()
+    const ltaLoginSelector = '//*[@id="content"]/div[1]/div[2]/div[1]/div[2]/form/button'
+    await page.locator(ltaLoginSelector).click();
 
     const usernameSelector = 'input[placeholder=Username]'
     await page.locator(usernameSelector).fill(process.env.LTA_USERNAME)
@@ -102,13 +108,18 @@ const login = async page => {
     const submitSelector = 'button[title=Login]'
     await page.locator(submitSelector).click()
 
+    // click Make a booking button
+    const bookingSelector = '//*[@id="my-bookings-view"]/div/div/div/div[2]/div/div/div/p/a'
+    await page.locator(bookingSelector).click();
+
     const sessionsSelector = '.booking-sheet'
     return await page.waitForSelector(sessionsSelector)
 }
 
 const getSessions = async (page) =>  {
+    console.log('looking for courts...')
     // const url = `https://clubspark.lta.org.uk/FinsburyPark/Booking/BookByDate#?date=${dateString}`;
-    const url = `https://clubspark.lta.org.uk/PoplarRecGround/Booking/BookByDate#?date=${dateString}`;
+    const url = `https://stratford.newhamparkstennis.org.uk/Booking/BookByDate#?date=${dateString}`;
     console.log(url)
     await page.goto(url);
 
@@ -135,6 +146,10 @@ const getSessions = async (page) =>  {
 }
 
 const book = async (page, url) => {
+
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    console.log('book')
     console.log(url)
     await page.goto(url)
 
@@ -154,7 +169,7 @@ const book = async (page, url) => {
 
 const bookingPageUrl = (courtId, date, sessionId, startTime, endTime) => {
     // return `https://clubspark.lta.org.uk/FinsburyPark/Booking/Book?` + 
-    return `https://clubspark.lta.org.uk/PoplarRecGround/Booking/Book?` + 
+    return `https://stratford.newhamparkstennis.org.uk/Booking/Book?` + 
     `Contacts%5B0%5D.IsPrimary=true&` + 
     `ResourceID=${courtId}&` +
     `Date=${date}&` +
