@@ -90,7 +90,7 @@ const preferences = weekendDays.includes(date.getDay()) ? weekendPreferences : w
     // }
 
      browser.close()
-})
+})();
 
 const login = async page => {
     console.log('logging in')
